@@ -12,6 +12,7 @@ library(tidyverse)
 library(xml2)
 library(leaflet)
 library(visdat)
+library(DT)
 
 # Define UI for application 
 ui <- fluidPage(
@@ -49,12 +50,12 @@ ui <- fluidPage(
         
         tabPanel("View Event data", 
             h3("Event Data"),
-            dataTableOutput("table1")
+            DT::dataTableOutput("table1")
         ),
         
         tabPanel("View Occurence data", 
                  h3("Occurence Data"),
-                 dataTableOutput("table2")
+                 DT::dataTableOutput("table2")
         ),
         
         tabPanel("Explore Geographic patterns",
@@ -82,36 +83,42 @@ server <- function(input, output) {
         download.file(endpoint_url, destfile="data/temp.zip", mode="wb")
         unzip ("data/temp.zip", exdir = "data")
         
-        my_dat1 <- read.csv("data/event.txt", sep="\t", encoding = "UTF-8") %>% select(-id)
-        my_dat2 <- read.csv("data/occurrence.txt", sep="\t", encoding = "UTF-8") %>% select(-id) 
+        my_dat1 <- as_tibble(read_delim("data/event.txt", delim="\t", quote = ""))
+        my_dat2 <- as_tibble(read_delim("data/occurrence.txt", delim="\t", quote = ""))
+        dat2 <- left_join(my_dat2, my_dat1, by="eventID")
         
         meta <- read_xml("data/eml.xml") %>% as_list() 
         
         
-        output$table1 <- renderDataTable(my_dat1)
-        output$table2 <- renderDataTable(my_dat2)
+        output$table1 <- DT::renderDataTable(my_dat1)
+        output$table2 <- DT::renderDataTable(my_dat2)
         
         
         output$DOI1 <- renderText(attr(meta$eml$additionalMetadata$metadata$gbif$citation,"identifier"))
         output$gbif_citation <- renderText(meta$eml$additionalMetadata$metadata$gbif$citation[[1]])        
         output$list_files <- renderTable(as.matrix(dir("data", pattern="\\.txt$"), ncol=1))
         
-    })
-    
-    ##
-    output$mymap <- renderLeaflet({
-        leaflet() %>%
-            addProviderTiles(providers$Esri.NatGeoWorldMap,
-                             options = providerTileOptions(noWrap = TRUE)
-            )
-    })
-    
-    ##
-    output$dataviz1 <- renderPlot({
-        dat <- my_dat1()
-        vis_guess(dat)
+        output$mymap <- renderLeaflet({
+            leaflet() %>%
+                addProviderTiles(providers$Esri.NatGeoWorldMap,
+                                 options = providerTileOptions(noWrap = TRUE, 
+                                                               preferCanvas = TRUE)) %>%
+                addMarkers(lat=~decimalLatitude, lng=~decimalLongitude, data=(dat2))                     
+            
+                                    })
         
-    })
+        output$dataviz1 <- renderPlot({
+            vis_guess((my_dat1))
+            
+        })
+        
+         })
+    
+    ##
+   
+    
+    ##
+
     
     
 }
