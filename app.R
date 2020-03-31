@@ -1,24 +1,11 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 
 library(shiny)
 library(tidyverse)
 library(xml2)
 library(leaflet)
 library(visdat)
-<<<<<<< HEAD
 library(DT)
-=======
-library(DT) # known error with Shiny Datatable fixed by calling DT explictly 
-#see https://stackoverflow.com/questions/58995381/shiny-datatable-error-datatables-warning-table-id-datatables-table-0-request
-
->>>>>>> b4610663f2ec70ce7992ca801335975d5d6d7ae9
 
 # Define UI for application 
 ui <- fluidPage(
@@ -84,8 +71,7 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     observeEvent(input$run,{ #Run Button
-<<<<<<< HEAD
-        
+
         datasetID <- "c47f13c1-7427-45a0-9f12-237aad351040"
         dataset <- RJSONIO::fromJSON(paste0("http://api.gbif.org/v1/dataset/",datasetID,"/endpoint"))
         endpoint_url <- dataset[[1]]$url 
@@ -130,7 +116,6 @@ server <- function(input, output) {
     ##
 
     
-=======
         if(input$dataset == "FeFo"){
             datasetID <- "c47f13c1-7427-45a0-9f12-237aad351040"
             dataset <- RJSONIO::fromJSON(paste0("http://api.gbif.org/v1/dataset/",datasetID,"/endpoint"))
@@ -200,9 +185,9 @@ server <- function(input, output) {
             
             
         }
-                })
+               
     
-    plotdata<-eventReactive(input$run,{
+        plotdata<-eventReactive(input$run,{
         plotdata<-read.csv("data/event.txt", sep="\t", encoding = "UTF-8")
         plotdata%>%select(-id)->plotdata})
     
@@ -231,8 +216,7 @@ server <- function(input, output) {
 
     })
 
->>>>>>> b4610663f2ec70ce7992ca801335975d5d6d7ae9
-    
+
 }
 
 # Run the application 
